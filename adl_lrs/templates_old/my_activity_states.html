@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ STATIC_URL }}css/extra.css">
+<style>
+    pre {
+        white-space: pre-wrap;       /* CSS 3 */
+        white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+        white-space: -pre-wrap;      /* Opera 4-6 */
+        white-space: -o-pre-wrap;    /* Opera 7 */
+        word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    }
+    .string { 
+        color: green; 
+    }
+    .number { 
+        color: blue; 
+    }
+    .boolean { 
+        color: purple; 
+    }
+    .null {
+     color: red; 
+    }
+    .key {
+     color: black; 
+    }
+</style>
+{% endblock extra_css %}
+{% block title %}{{user.username}}'s Activity States{% endblock title %}
+{% block heading %}{{user.username}}'s Activity States{% endblock heading %}
+{% block content %}
+<br>
+<br>
+<div class="content">
+    <div class="pure-g">
+        <div class="pure-u-1-6 pure-u-md-1-6 pure-u-lg-1-6"></div>
+        <div class="pure-u-2-3 pure-u-md-2-3 pure-u-lg-2-3">
+            <div id="myactivitystates" class="content">
+                <h2>My Activity States</h2>
+                <p>All of your activity states will be displayed here. If you created any activity states using the stateID, <i> https://w3id.org/xapi/scorm/activity-state<i/>, then you can drill deeper into it and look at all of the xAPI SCORM attempt states for that activity. For more information on this, please visit the <a target="_blank" href="https://github.com/adlnet/xAPI-SCORM-Profile/blob/master/xapi-scorm-profile.md">xAPI SCORM Profile</a>.</p>
+                <br>
+                <br>
+                <div>
+                    {% if activity_states %}
+                        <div class="email-item">
+                            {% for as in activity_states %}
+                                <div class="datacontainer pure-u">
+                                    <h4 class="email-name"><span class="as-actid">{{ as.activity_id }}</span> - <span class="as-stid">{{ as.state_id }}</span></h4>
+                                    <h5 class="email-subject"><i>Last Updated: {{ as.updated }}</i></h5>
+                                    <p class="email-desc">
+                                        {% if as.json_state %}
+                                            <pre class="jsonpre">{{ as.json_state }}</pre>
+                                            <input class="hidden" type="hidden" value="{{ as.json_state }}">
+                                        {% else %}
+                                            {% if as.content_type == "application/octet-stream" or as.content_type == "text/plain" %}
+                                                <pre class="jsonpre">Non-JSON</pre>
+                                                <input class="hidden" type="hidden" value="{{ as.state }}">
+                                            {% else %}
+                                                Cannot display state (non-text and non-JSON)
+                                                <input class="hidden" type="hidden" value="">
+                                            {% endif %}
+                                        {% endif %}
+                                        {% if as.state_id == "https://w3id.org/xapi/scorm/activity-state" %}
+                                            <br>
+                                            <button class="scormbutton pure-button pure-button-primary" type="button">Show Attempts</button>
+                                            <br>
+                                            <br>
+                                            <div class="attemptarray"></div>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <br>
+                                <br>
+                            {% endfor %}
+                        </div>
+                        <div class="pagination">
+                            <span class="step-links">
+                                {% if activity_states.has_previous %}
+                                    <a href="?page={{ activity_states.previous_page_number }}">Previous</a>
+                                {% endif %}
+                                <span class="current">
+                                    Page {{ activity_states.number }} of {{ activity_states.paginator.num_pages }}
+                                </span>
+                                {% if activity_states.has_next %}
+                                    <a href="?page={{ activity_states.next_page_number }}">Next</a>
+                                {% endif %}                            
+                            </span>
+                        </div>
+                    {% else %}
+                        No activity states to display
+                    {% endif %}               
+                </div>            
+            </div>
+        </div>
+        <div class="pure-u-1-6 pure-u-md-1-6 pure-u-lg-1-6"></div>
+    </div>
+</div>        
+{% endblock content %}
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+<!-- This script has to be placed in html file so url resolves correctly -->
+<script type="text/javascript">
+    // Appends the returned state to the given element
+    function getState(act_id, state_id, ele){
+        $.ajax({
+            url: "{% url 'my_activity_state' %}?act_id="+encodeURIComponent(act_id)+"&state_id="+encodeURIComponent(state_id),
+            type: "GET",
+            success: function (data){
+                $(ele).append(syntaxHighlight(data));
+            },
+            error: function(xhr, ajaxOptions, thrownError){
+                alert(thrownError);
+            }
+        });
+    }
+</script>
+<script type="text/javascript" src="{{ STATIC_URL }}scripts/extra-data.js"></script>
+{% endblock extra_js %}

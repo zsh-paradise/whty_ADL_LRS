@@ -1,0 +1,14 @@
+*.pyc
+*.log
+env
+build
+migrations
+runtests
+.coverage
+404.html
+500.html
+media/
+federated-analytics.js
+*.conf
+lrs/celery.py
+*.ini
