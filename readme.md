@@ -1,27 +1,37 @@
 ﻿# ADL LRS
 
-#### Installation tested on <b>Ubuntu 14.04</b> machine with Python 2.7.6, <b>Ubuntu 14.04+</b> is recommended. Updated to be compliant with the 1.0.3 xAPI spec.
+#### 本篇是天喻教育xapi系统部署文档，python2.7，postgres9.6
 
-This version is stable, but only intended to support a small amount of users as a proof of concept. While it uses programming best practices, it is not designed to take the place of an enterprise system.
 
-## Installation
+## 初始化
 
-**Install Postgres** (The apt-get upgrade is only needed if you're running Ubuntu 14. If running 15+ you can skip to installing postgresql. Also version 9.4+ is needed)
+**Install Postgres** 参看文献https://wiki.postgresql.org/wiki/YUM_Installation 
 
-    admin:~$ wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-    admin:~$ sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" >> /etc/apt/sources.list.d/postgresql.list'
-    admin:~$ sudo apt-get update
-    admin:~$ sudo apt-get upgrade
+    sudo  yum install https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-redhat96-9.6-3.noarch.rpm
+ 
+    sudo yum install postgresql96-server
+    
+    sudo yum install postgresql96-devel
+ 
+    sudo /usr/pgsql-9.6/bin/postgresql96-setup initdb
 
-    admin:~$ sudo apt-get install postgresql-9.4 postgresql-server-dev-9.4 postgresql-contrib-9.4
-    (can install 9.5 if on Ubuntu 16)
-
+    
     admin:~$ sudo -u postgres createuser -P -s <db_owner_name>
     Enter password for new role: <db_owner_password>
     Enter it again: <db_owner_password>
     admin:~$ sudo -u postgres psql template1
     template1=# CREATE DATABASE lrs OWNER <db_owner_name>;
     template1=# \q (exits shell)
+    
+    修改数据库参数
+    /var/lib/pgsql/9.6/data/pg_hba.conf
+    # "local" is for Unix domain socket connections only
+    local   all             all                                     trust
+    # IPv4 local connections:
+    host    all             all             127.0.0.1/32            trust
+    # IPv6 local connections:
+    host    all             all             ::1/128                 trust
+
 
 
 **Install Prerequisites**
